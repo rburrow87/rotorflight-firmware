@@ -63,6 +63,7 @@
 #include "io/beeper.h"
 #include "io/gps.h"
 #include "io/serial.h"
+#include "io/ledstrip.h"
 
 #include "msp/msp.h"
 
@@ -134,6 +135,9 @@ enum
     FSSP_DATAID_CAP_USED   = 0x5250 ,
     FSSP_DATAID_GOV_MODE   = 0x5450 , // custom
     FSSP_DATAID_MODEL_ID   = 0x5460 , // custom
+    FSSP_DATAID_PID_PROFILE   = 0x5471 , // custom
+    FSSP_DATAID_RATES_PROFILE = 0x5472 , // custom
+    FSSP_DATAID_LED_PROFILE   = 0x5473 , // custom
 #if defined(USE_ACC)
     FSSP_DATAID_PITCH      = 0x5230 , // custom
     FSSP_DATAID_ROLL       = 0x5240 , // custom
@@ -337,11 +341,23 @@ static void initSmartPortSensors(void)
 
     //prob need configurator option for these?
     if (telemetryIsSensorEnabled(SENSOR_GOV_MODE)) {
-    ADD_SENSOR(FSSP_DATAID_GOV_MODE);
+        ADD_SENSOR(FSSP_DATAID_GOV_MODE);
     }
-    
+
     if (telemetryIsSensorEnabled(SENSOR_MODEL_ID)) {
-    ADD_SENSOR(FSSP_DATAID_MODEL_ID);
+        ADD_SENSOR(FSSP_DATAID_MODEL_ID);
+    }
+
+    if (telemetryIsSensorEnabled(SENSOR_PID_PROFILE)) {
+        ADD_SENSOR(FSSP_DATAID_PID_PROFILE);
+    }
+
+    if (telemetryIsSensorEnabled(SENSOR_RATES_PROFILE)) {
+        ADD_SENSOR(FSSP_DATAID_RATES_PROFILE);
+    }
+
+    if (telemetryIsSensorEnabled(SENSOR_LED_PROFILE)) {
+        ADD_SENSOR(FSSP_DATAID_LED_PROFILE);
     }
 
     if (telemetryIsSensorEnabled(SENSOR_MODE)) {
@@ -668,10 +684,24 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 }
                 *clearToSend = false;
                 break;
-            case FSSP_DATAID_MODEL_ID   :                
+            case FSSP_DATAID_MODEL_ID   :
                 smartPortSendPackage(id, pilotConfig()->modelId);
                 *clearToSend = false;
                 break;
+            case FSSP_DATAID_PID_PROFILE :
+                smartPortSendPackage(id, getCurrentPidProfileIndex() + 1);
+                *clearToSend = false;
+                break;
+            case FSSP_DATAID_RATES_PROFILE :
+                smartPortSendPackage(id, getCurrentControlRateProfileIndex() + 1);
+                *clearToSend = false;
+                break;
+#ifdef USE_LED_STRIP
+            case FSSP_DATAID_LED_PROFILE :
+                smartPortSendPackage(id, getLedProfile() + 1);
+                *clearToSend = false;
+                break;
+#endif
             case FSSP_DATAID_VFAS       :
                 vfasVoltage = telemetryConfig()->report_cell_voltage ? getBatteryAverageCellVoltage() : getBatteryVoltage();
                 smartPortSendPackage(id, vfasVoltage); // in 0.01V according to SmartPort spec
