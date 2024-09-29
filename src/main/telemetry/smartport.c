@@ -63,7 +63,6 @@
 #include "io/beeper.h"
 #include "io/gps.h"
 #include "io/serial.h"
-#include "io/ledstrip.h"
 
 #include "msp/msp.h"
 
@@ -165,7 +164,7 @@ enum
 };
 
 // if adding more sensors then increase this value (should be equal to the maximum number of ADD_SENSOR calls)
-#define MAX_DATAIDS 29
+#define MAX_DATAIDS 30
 
 static uint16_t frSkyDataIdTable[MAX_DATAIDS];
 
@@ -358,6 +357,10 @@ static void initSmartPortSensors(void)
 
     if (telemetryIsSensorEnabled(SENSOR_LED_PROFILE)) {
         ADD_SENSOR(FSSP_DATAID_LED_PROFILE);
+    }
+
+    if (telemetryIsSensorEnabled(SENSOR_BEC_VOLTAGE)) {
+        ADD_SENSOR(FSSP_DATAID_A3);
     }
 
     if (telemetryIsSensorEnabled(SENSOR_MODE)) {
@@ -685,19 +688,19 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_MODEL_ID   :
-                smartPortSendPackage(id, pilotConfig()->modelId);
+                smartPortSendPackage(id, telemetrySensorValue(TELEM_MODEL_ID));
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_PID_PROFILE :
-                smartPortSendPackage(id, getCurrentPidProfileIndex() + 1);
+                smartPortSendPackage(id, telemetrySensorValue(TELEM_PID_PROFILE));
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_RATES_PROFILE :
-                smartPortSendPackage(id, getCurrentControlRateProfileIndex() + 1);
+                smartPortSendPackage(id, telemetrySensorValue(TELEM_RATES_PROFILE));
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_LED_PROFILE :
-                smartPortSendPackage(id, getLedProfile() + 1);
+                smartPortSendPackage(id, telemetrySensorValue(TELEM_LED_PROFILE));
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_VFAS       :
@@ -962,6 +965,12 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 }
                 break;
 #endif
+            case FSSP_DATAID_A3         :
+                vfasVoltage = telemetrySensorValue(TELEM_BEC_VOLTAGE); // in 0.01V according to SmartPort spec
+                smartPortSendPackage(id, vfasVoltage);
+                *clearToSend = false;
+                break;
+
             case FSSP_DATAID_A4         :
                 vfasVoltage = getBatteryAverageCellVoltage(); // in 0.01V according to SmartPort spec
                 smartPortSendPackage(id, vfasVoltage);
