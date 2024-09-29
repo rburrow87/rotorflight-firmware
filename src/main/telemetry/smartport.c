@@ -95,30 +95,12 @@ enum
     FSSP_DATAID_VFAS       = 0x0210 ,
     FSSP_DATAID_VFAS1      = 0x0211 ,
     FSSP_DATAID_VFAS2      = 0x0212 ,
-    FSSP_DATAID_VFAS3      = 0x0213 ,
-    FSSP_DATAID_VFAS4      = 0x0214 ,
-    FSSP_DATAID_VFAS5      = 0x0215 ,
-    FSSP_DATAID_VFAS6      = 0x0216 ,
-    FSSP_DATAID_VFAS7      = 0x0217 ,
-    FSSP_DATAID_VFAS8      = 0x0218 ,
     FSSP_DATAID_CURRENT    = 0x0200 ,
     FSSP_DATAID_CURRENT1   = 0x0201 ,
     FSSP_DATAID_CURRENT2   = 0x0202 ,
-    FSSP_DATAID_CURRENT3   = 0x0203 ,
-    FSSP_DATAID_CURRENT4   = 0x0204 ,
-    FSSP_DATAID_CURRENT5   = 0x0205 ,
-    FSSP_DATAID_CURRENT6   = 0x0206 ,
-    FSSP_DATAID_CURRENT7   = 0x0207 ,
-    FSSP_DATAID_CURRENT8   = 0x0208 ,
     FSSP_DATAID_RPM        = 0x0500 ,
     FSSP_DATAID_RPM1       = 0x0501 ,
     FSSP_DATAID_RPM2       = 0x0502 ,
-    FSSP_DATAID_RPM3       = 0x0503 ,
-    FSSP_DATAID_RPM4       = 0x0504 ,
-    FSSP_DATAID_RPM5       = 0x0505 ,
-    FSSP_DATAID_RPM6       = 0x0506 ,
-    FSSP_DATAID_RPM7       = 0x0507 ,
-    FSSP_DATAID_RPM8       = 0x0508 ,
     FSSP_DATAID_ALTITUDE   = 0x0100 ,
     FSSP_DATAID_FUEL       = 0x0600 ,
     FSSP_DATAID_ADC1       = 0xF102 ,
@@ -152,12 +134,6 @@ enum
     FSSP_DATAID_TEMP       = 0x0B70 ,
     FSSP_DATAID_TEMP1      = 0x0B71 ,
     FSSP_DATAID_TEMP2      = 0x0B72 ,
-    FSSP_DATAID_TEMP3      = 0x0B73 ,
-    FSSP_DATAID_TEMP4      = 0x0B74 ,
-    FSSP_DATAID_TEMP5      = 0x0B75 ,
-    FSSP_DATAID_TEMP6      = 0x0B76 ,
-    FSSP_DATAID_TEMP7      = 0x0B77 ,
-    FSSP_DATAID_TEMP8      = 0x0B78 ,
     FSSP_DATAID_A3         = 0x0900 ,
     FSSP_DATAID_A4         = 0x0910
 };
@@ -707,12 +683,6 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
 #ifdef USE_ESC_SENSOR_TELEMETRY
             case FSSP_DATAID_VFAS1      :
             case FSSP_DATAID_VFAS2      :
-            case FSSP_DATAID_VFAS3      :
-            case FSSP_DATAID_VFAS4      :
-            case FSSP_DATAID_VFAS5      :
-            case FSSP_DATAID_VFAS6      :
-            case FSSP_DATAID_VFAS7      :
-            case FSSP_DATAID_VFAS8      :
                 escData = getEscSensorData(id - FSSP_DATAID_VFAS1);
                 if (escData != NULL) {
                     smartPortSendPackage(id, escData->voltage / 10);  // in 10mV steps
@@ -727,12 +697,6 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
 #ifdef USE_ESC_SENSOR_TELEMETRY
             case FSSP_DATAID_CURRENT1   :
             case FSSP_DATAID_CURRENT2   :
-            case FSSP_DATAID_CURRENT3   :
-            case FSSP_DATAID_CURRENT4   :
-            case FSSP_DATAID_CURRENT5   :
-            case FSSP_DATAID_CURRENT6   :
-            case FSSP_DATAID_CURRENT7   :
-            case FSSP_DATAID_CURRENT8   :
                 escData = getEscSensorData(id - FSSP_DATAID_CURRENT1);
                 if (escData != NULL) {
                     smartPortSendPackage(id, escData->current / 10); // in 10mA steps
@@ -747,12 +711,6 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 break;
             case FSSP_DATAID_RPM1       :
             case FSSP_DATAID_RPM2       :
-            case FSSP_DATAID_RPM3       :
-            case FSSP_DATAID_RPM4       :
-            case FSSP_DATAID_RPM5       :
-            case FSSP_DATAID_RPM6       :
-            case FSSP_DATAID_RPM7       :
-            case FSSP_DATAID_RPM8       :
                 tmp2 = id - FSSP_DATAID_RPM1;
                 if (isMotorRpmSourceActive(tmp2)) {
                     smartPortSendPackage(id, getMotorRPM(tmp2));
@@ -768,12 +726,6 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 break;
             case FSSP_DATAID_TEMP1      :
             case FSSP_DATAID_TEMP2      :
-            case FSSP_DATAID_TEMP3      :
-            case FSSP_DATAID_TEMP4      :
-            case FSSP_DATAID_TEMP5      :
-            case FSSP_DATAID_TEMP6      :
-            case FSSP_DATAID_TEMP7      :
-            case FSSP_DATAID_TEMP8      :
                 escData = getEscSensorData(id - FSSP_DATAID_TEMP1);
                 if (escData != NULL) {
                     smartPortSendPackage(id, escData->temperature / 10);
@@ -816,7 +768,7 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
             {                
                 uint16_t roll = attitude.values.roll;   // get roll angle value
                 uint16_t pitch = attitude.values.pitch; // get pitch angle value
-                uint32_t data = (pitch << 16) | (roll & 0xFFFF); // Combine roll and pitch into a single 4-byte value
+                uint32_t data = (pitch << 16) | (roll & 0xFFFF); // Combine roll and pitch for package
                 smartPortSendPackage(id, data*10);
                 *clearToSend = false;
             }
