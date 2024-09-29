@@ -138,8 +138,7 @@ enum
     FSSP_DATAID_RATES_PROFILE = 0x5472 , // custom
     FSSP_DATAID_LED_PROFILE   = 0x5473 , // custom
 #if defined(USE_ACC)
-    FSSP_DATAID_PITCH      = 0x5230 , // custom
-    FSSP_DATAID_ROLL       = 0x5240 , // custom
+    FSSP_DATAID_ANGLES     = 0x0730 ,
     FSSP_DATAID_ACCX       = 0x0700 ,
     FSSP_DATAID_ACCY       = 0x0710 ,
     FSSP_DATAID_ACCZ       = 0x0720 ,
@@ -408,11 +407,8 @@ static void initSmartPortSensors(void)
 
 #if defined(USE_ACC)
     if (sensors(SENSOR_ACC)) {
-        if (telemetryIsSensorEnabled(SENSOR_PITCH)) {
-            ADD_SENSOR(FSSP_DATAID_PITCH);
-        }
-        if (telemetryIsSensorEnabled(SENSOR_ROLL)) {
-            ADD_SENSOR(FSSP_DATAID_ROLL);
+        if (telemetryIsSensorEnabled(SENSOR_PITCH) && telemetryIsSensorEnabled(SENSOR_ROLL)) {
+            ADD_SENSOR(FSSP_DATAID_ANGLES);
         }
         if (telemetryIsSensorEnabled(SENSOR_ACC_X)) {
             ADD_SENSOR(FSSP_DATAID_ACCX);
@@ -816,13 +812,14 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 *clearToSend = false;
                 break;
 #if defined(USE_ACC)
-            case FSSP_DATAID_PITCH      :
-                smartPortSendPackage(id, attitude.values.pitch); // given in 10*deg
+            case FSSP_DATAID_ANGLES      :
+            {                
+                uint16_t roll = attitude.values.roll;   // get roll angle value
+                uint16_t pitch = attitude.values.pitch; // get pitch angle value
+                uint32_t data = (pitch << 16) | (roll & 0xFFFF); // Combine roll and pitch into a single 4-byte value
+                smartPortSendPackage(id, data*10);
                 *clearToSend = false;
-                break;
-            case FSSP_DATAID_ROLL       :
-                smartPortSendPackage(id, attitude.values.roll); // given in 10*deg
-                *clearToSend = false;
+            }
                 break;
             case FSSP_DATAID_ACCX       :
                 smartPortSendPackage(id, lrintf(100 * acc.accADC[X] * acc.dev.acc_1G_rec)); // Multiply by 100 to show as x.xx g on Taranis
