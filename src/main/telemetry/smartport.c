@@ -132,7 +132,8 @@ enum
     FSSP_DATAID_ADJFUNC    = 0x5110 , // custom
     FSSP_DATAID_ADJVALUE   = 0x5111 , // custom
     FSSP_DATAID_CAP_USED   = 0x5250 ,
-    FSSP_DATAID_GOV_MODE   = 0x5450 , //custom
+    FSSP_DATAID_GOV_MODE   = 0x5450 , // custom
+    FSSP_DATAID_MODEL_ID   = 0x5460 , // custom
 #if defined(USE_ACC)
     FSSP_DATAID_PITCH      = 0x5230 , // custom
     FSSP_DATAID_ROLL       = 0x5240 , // custom
@@ -337,7 +338,11 @@ static void initSmartPortSensors(void)
     //prob need configurator option for these?
     if (telemetryIsSensorEnabled(SENSOR_GOV_MODE)) {
     ADD_SENSOR(FSSP_DATAID_GOV_MODE);
-    }    
+    }
+    
+    if (telemetryIsSensorEnabled(SENSOR_MODEL_ID)) {
+    ADD_SENSOR(FSSP_DATAID_MODEL_ID);
+    }
 
     if (telemetryIsSensorEnabled(SENSOR_MODE)) {
         ADD_SENSOR(FSSP_DATAID_T1);
@@ -662,7 +667,11 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                     smartPortSendPackage(id, getGovernorState());
                 }
                 *clearToSend = false;
-                break;           
+                break;
+            case FSSP_DATAID_MODEL_ID   :                
+                smartPortSendPackage(id, pilotConfig()->modelId);
+                *clearToSend = false;
+                break;
             case FSSP_DATAID_VFAS       :
                 vfasVoltage = telemetryConfig()->report_cell_voltage ? getBatteryAverageCellVoltage() : getBatteryVoltage();
                 smartPortSendPackage(id, vfasVoltage); // in 0.01V according to SmartPort spec

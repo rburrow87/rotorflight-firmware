@@ -48,6 +48,7 @@ typedef enum {
     SENSOR_CAP_USED        = BIT(20),
     SENSOR_ADJUSTMENT      = BIT(21),
     SENSOR_GOV_MODE        = BIT(22),
+    SENSOR_MODEL_ID        = BIT(23),
 } sensor_e;
 
 typedef enum {
